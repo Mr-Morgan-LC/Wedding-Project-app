@@ -13,14 +13,29 @@ module.exports = {
           '0%': { transform: 'scale(1)' },
           '100%': { transform: 'scale(1.15)' },
         },
+        'zoom-in': {
+          '0%': { transform: 'scale(0.5)' },
+          '100%': { transform: 'scale(1)' },
+        },
         'fade-in-up': {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeInLeft: {
+          '0%': { opacity: '0', transform: 'translateX(-30px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        fadeInRight: {
+          '0%': { opacity: '0', transform: 'translateX(30px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
         }
       },
       animation: {
         'slow-zoom': 'slow-zoom 20s ease-in-out infinite alternate',
+        'zoom-in': 'zoom-in 1s ease-out forwards',
         'fade-in-up': 'fade-in-up 1s ease-out forwards',
+        'fade-in-left': 'fadeInLeft 1s ease-out forwards',
+        'fade-in-right': 'fadeInRight 1s ease-out forwards',
       },
     },
   },
