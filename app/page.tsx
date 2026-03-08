@@ -94,15 +94,10 @@ const CountdownTimer = () => {
   return (
 
     <div className="flex justify-center gap-3 my-8" data-aos="fade-up">
-
       <TimeUnit value={timeLeft.days} label="Ngày" />
-
       <TimeUnit value={timeLeft.hours} label="Giờ" />
-
       <TimeUnit value={timeLeft.minutes} label="Phút" />
-
       <TimeUnit value={timeLeft.seconds} label="Giây" />
-
     </div>
 
   );
@@ -118,35 +113,21 @@ const FallingEffects = () => {
     <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden" aria-hidden="true">
 
       {[...Array(30)].map((_, i) => {
-
         const isHeart = i % 2 === 0; // Chia tỷ lệ 50/50
-
         const size = isHeart ? Math.random() * 10 + 10 : Math.random() * 6 + 4;
-
         const duration = Math.random() * 5 + 8; // Rơi trong khoảng 8-13s
-
         const delay = Math.random() * 5;
-
         return (
 
           <div
-
             key={i}
-
             className="absolute"
-
             style={{
-
               left: `${Math.random() * 100}%`,
-
               top: `-30px`,
-
               animation: `fall-sway ${duration}s linear infinite`,
-
               animationDelay: `${delay}s`,
-
               opacity: isHeart ? 0.8 : 0.6,
-
             }}
 
           >
@@ -191,7 +172,13 @@ const FallingEffects = () => {
 
 };
 
-
+export default function Page() {
+  useEffect(() => {
+    AOS.init({
+      duration: 1000,
+      once: true,
+    });
+  }, []);
 
 export default function WeddingInvitation() {
 
