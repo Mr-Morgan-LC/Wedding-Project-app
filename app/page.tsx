@@ -59,6 +59,7 @@ export default function WeddingInvitation() {
   const secThankRef = useScrollFadeIn();
   const secActionRef = useScrollFadeIn(0.5);
 
+  // --- 2. LOGIC NHẠC ---
   // --- LOGIC NHẠC ---
 useEffect(() => {
   // Hàm xử lý phát nhạc khi người dùng tương tác lần đầu
