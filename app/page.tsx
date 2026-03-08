@@ -311,7 +311,7 @@ const toggleMusic = (e: React.MouseEvent) => {
        className="w-full h-full border-0"
         allowFullScreen
         loading="lazy"
-       referrerpolicy="no-referrer-when-downgrade">
+       referrerPolicy="no-referrer-when-downgrade">
        </iframe>
     </div>
     
