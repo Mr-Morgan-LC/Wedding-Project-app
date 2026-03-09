@@ -6,9 +6,9 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 // --- CẤU HÌNH FONT CHUẨN NEXTJS ---
-const greatVibes = Great_Vibes({ 
+const greatVibes = Great_Vibes({
   weight: '400',
-  subsets: ['latin'], 
+  subsets: ['latin'],
   display: 'swap',
 });
 
@@ -110,6 +110,7 @@ const FallingEffects = () => {
 
 export default function WeddingInvitation() {
   // --- 1. QUẢN LÝ TRẠNG THÁI ---
+  const [isOpened, setIsOpened] = useState(false); // Trạng thái màn hình Welcome
   const [showRSVP, setShowRSVP] = useState(false);
   const [showGifts, setShowGifts] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -135,41 +136,19 @@ export default function WeddingInvitation() {
     });
   }, []);
 
-  // --- 2. LOGIC NHẠC (CHẠM LÀ PHÁT) ---
- // Xử lý tự động bật nhạc khi người dùng tương tác lần đầu với trang web
-  useEffect(() => {
-    const initAudio = () => {
-      if (audioRef.current && audioRef.current.paused && !isPlaying) {
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              setIsPlaying(true);
-              // Khi phát thành công, gỡ bỏ các sự kiện lắng nghe để tránh lặp lại
-              document.removeEventListener('click', initAudio);
-              document.removeEventListener('touchstart', initAudio);
-            })
-            .catch((error) => {
-              console.log("Trình duyệt tạm thời chặn nhạc, chờ tương tác tiếp theo:", error);
-            });
-        }
-      }
-    };
+  // --- 2. LOGIC NHẠC VÀ MỞ THIỆP ---
+  const handleOpenInvitation = () => {
+    setIsOpened(true);
+    if (audioRef.current) {
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => console.log("Lỗi bật nhạc:", err));
+    }
+  };
 
-    // Lắng nghe trực tiếp trên document sẽ nhận diện tương tác nhạy hơn
-    document.addEventListener('click', initAudio);
-    document.addEventListener('touchstart', initAudio, { passive: true });
-
-    return () => {
-      document.removeEventListener('click', initAudio);
-      document.removeEventListener('touchstart', initAudio);
-    };
-  }, [isPlaying]);
-
-  // Hàm bật/tắt nhạc thủ công qua nút
   const toggleMusic = (e: React.MouseEvent) => {
-    e.stopPropagation(); 
-    e.preventDefault(); // Ngăn hành vi mặc định
+    e.stopPropagation();
+    e.preventDefault();
     
     if (audioRef.current) {
       if (isPlaying) {
@@ -212,15 +191,28 @@ export default function WeddingInvitation() {
   };
 
   return (
-    <div 
-      // Gắn sự kiện chạm và click vào bao trùm toàn bộ app
-      className={`bg-[#f4f4f4] min-h-screen flex justify-center p-0 md:p-4 font-sans text-gray-800 relative ${playfair.className}`}
-      style={{ colorScheme: 'light' }}
-    >
+    <div className={`bg-[#f4f4f4] min-h-screen flex justify-center p-0 md:p-4 font-sans text-gray-800 relative ${playfair.className}`}>
       <audio ref={audioRef} src="/wedding-music.mp3" loop preload="auto" />
 
+      {/* --- MÀN HÌNH WELCOME OVERLAY (BẮT BUỘC BẤM ĐỂ PHÁT NHẠC) --- */}
+      {!isOpened && (
+        <div className="fixed inset-0 z-[999] bg-[#fdfcfb] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
+          <div className="border border-stone-300 p-8 rounded-xl text-center shadow-sm w-full max-w-[350px] bg-white">
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-6">Thư mời tiệc cưới</p>
+            <h1 className={`text-5xl mb-4 text-gray-900 ${greatVibes.className}`}>Nhất Lập <br/> <span className="text-3xl">&</span> <br/> Quỳnh Như</h1>
+            <div className="w-16 h-[1px] bg-gray-300 mx-auto my-6"></div>
+            <button
+              onClick={handleOpenInvitation}
+              className="px-8 py-3 bg-stone-800 text-white rounded-full font-bold uppercase text-xs tracking-widest shadow-lg animate-pulse hover:bg-[#8b0000] transition-colors"
+            >
+              Mở Thiệp
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* KHUNG NỘI DUNG CHÍNH */}
-      <main className="w-full max-w-[450px] bg-[#fdfcfb] min-h-screen shadow-2xl relative overflow-x-hidden">
+      <main className={`w-full max-w-[450px] bg-[#fdfcfb] min-h-screen shadow-2xl relative overflow-x-hidden ${!isOpened ? 'hidden' : 'block'}`}>
         
         <FallingEffects />
 
@@ -228,7 +220,6 @@ export default function WeddingInvitation() {
         <div className="fixed top-6 right-6 z-50 md:right-[calc(50%-200px)]" data-aos="zoom-in">
           <button
             onClick={toggleMusic}
-            // ĐÃ XÓA onTouchStart={toggleMusic} ĐỂ FIX LỖI "GHOST CLICK"
             className={`w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-white/40 active:scale-90 transition-all overflow-hidden ${isPlaying ? 'animate-heartbeat' : ''}`}
           >
             {isPlaying ? (
@@ -495,7 +486,7 @@ export default function WeddingInvitation() {
 
         {/* MODAL RSVP */}
         {showRSVP && (
-          <div 
+          <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
             onClick={(e) => e.stopPropagation()} // Ngăn chặn sự kiện nổi bọt ở background của modal
           >
@@ -531,7 +522,7 @@ export default function WeddingInvitation() {
 
         {/* MODAL QUÀ TẶNG */}
         {showGifts && (
-          <div 
+          <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
             onClick={(e) => e.stopPropagation()} // Ngăn chạm vào modal kích hoạt sự kiện body
           >

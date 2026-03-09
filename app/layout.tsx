@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 // --- ĐÂY LÀ PHẦN SEO VÀ CHIA SẺ LINK ---
-// Nhớ đổi thành domain thật của bạn sau khi gắn tên miền
-const DOMAIN = 'https://thiepcuoi-nhatlap-quynhnhu.vercel.app'; 
+// Đổi DOMAIN thành tên miền thật của bạn nếu có mua tên miền riêng nhé
+const DOMAIN = 'https://thiepcuoi-nhatlap-quynhnhu.vercel.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(DOMAIN),
   title: 'Thiệp Mời Đám Cưới | Nhất Lập ❤️ Quỳnh Như',
-  description: 'Trân trọng kính mời đến dự lễ thành hôn của Nhất Lập và Quỳnh Như vào ngày 11.08.2026...',
+  description: 'Trân trọng kính mời đến dự lễ thành hôn của Nhất Lập và Quỳnh Như vào ngày 11.08.2026. Sự hiện diện của bạn là niềm vinh hạnh cho gia đình chúng tôi!',
   openGraph: {
     title: 'Thiệp Mời Đám Cưới | Nhất Lập & Quỳnh Như',
     description: 'Trân trọng kính mời đến dự lễ thành hôn vào lúc 9:00 - Thứ Ba, 11.08.2026. Click để xem chi tiết!',
@@ -27,8 +27,7 @@ export const metadata: Metadata = {
     siteName: 'Đám Cưới Nhất Lập & Quỳnh Như',
     images: [
       {
-        // 🔥 DÙNG LINK TUYỆT ĐỐI Ở ĐÂY
-        url: `${DOMAIN}/anh-cuoi-cuoi.jpg`, 
+        url: `${DOMAIN}/anh-cuoi-cuoi.jpg`, // Đã đổi thành link tuyệt đối
         width: 1200,
         height: 630,
         alt: 'Ảnh cưới Nhất Lập và Quỳnh Như',
@@ -41,7 +40,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Thiệp Mời Đám Cưới | Nhất Lập ❤️ Quỳnh Như',
     description: 'Trân trọng kính mời đến dự lễ thành hôn vào ngày 11.08.2026.',
-    images: [`${DOMAIN}/anh-cuoi-cuoi.jpg`], // 🔥 Link tuyệt đối
+    images: [`${DOMAIN}/anh-cuoi-cuoi.jpg`], // Đã đổi thành link tuyệt đối
   },
 };
 
@@ -52,9 +51,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f4f4f4] text-gray-800`}>
-  {children}
-</body>
+      <body
+        // Ép nền sáng và màu chữ tối ở đây để chống lại Dark Mode của điện thoại
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f4f4f4] text-gray-800`}
+      >
+        {children}
+      </body>
     </html>
   );
 }
