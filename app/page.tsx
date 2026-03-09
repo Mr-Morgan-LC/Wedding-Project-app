@@ -69,42 +69,41 @@ const CountdownTimer = () => {
   );
 };
 
-// --- COMPONENT HIỆU ỨNG RƠI ---
+// --- COMPONENT HIỆU ỨNG TIM RƠI ---
 const FallingEffects = () => {
+  const [hearts, setHearts] = useState<Array<{ id: number, left: string, size: number, duration: number, delay: number }>>([]);
+
+  useEffect(() => {
+    const generatedHearts = [...Array(15)].map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      size: Math.random() * 10 + 10,
+      duration: Math.random() * 5 + 8,
+      delay: Math.random() * 5
+    }));
+    setHearts(generatedHearts);
+  }, []);
+
+  if (hearts.length === 0) return null;
+
   return (
     <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden" aria-hidden="true">
-      {[...Array(30)].map((_, i) => {
-        const isHeart = i % 2 === 0; 
-        const size = isHeart ? Math.random() * 10 + 10 : Math.random() * 6 + 4;
-        const duration = Math.random() * 5 + 8; 
-        const delay = Math.random() * 5;
-        return (
-          <div
-            key={i}
-            className="absolute"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `-30px`,
-              animation: `fall-sway ${duration}s linear infinite`,
-              animationDelay: `${delay}s`,
-              opacity: isHeart ? 0.8 : 0.6,
-            }}
-          >
-            {isHeart ? (
-              <img src="/icon-heart.png" style={{ width: `${size}px`, height: 'auto' }} alt="" />
-            ) : (
-              <div
-                className="bg-white rounded-full blur-[0.5px]"
-                style={{
-                  width: `${size}px`,
-                  height: `${size}px`,
-                  boxShadow: '0 0 8px rgba(255,255,255,0.5)',
-                }}
-              />
-            )}
-          </div>
-        );
-      })}
+      {hearts.map((heart) => (
+        <div
+          key={heart.id}
+          className="absolute"
+          style={{
+            left: heart.left,
+            top: `-30px`,
+            animation: `fall-sway ${heart.duration}s linear infinite`,
+            animationDelay: `${heart.delay}s`,
+            opacity: 0.8,
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon-heart.png" style={{ width: `${heart.size}px`, height: 'auto' }} alt="heart" />
+        </div>
+      ))}
     </div>
   );
 };
@@ -114,6 +113,8 @@ export default function WeddingInvitation() {
   const [showRSVP, setShowRSVP] = useState(false);
   const [showGifts, setShowGifts] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Trạng thái nhạc
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
@@ -134,33 +135,27 @@ export default function WeddingInvitation() {
     });
   }, []);
 
-  // --- 2. LOGIC NHẠC ---
-  useEffect(() => {
-    const handleFirstInteraction = () => {
-      if (audioRef.current && !isPlaying) {
+  // --- 2. LOGIC NHẠC (CHẠM LÀ PHÁT) ---
+  const handleGlobalTouch = () => {
+    // Nếu nhạc chưa bật, hễ người dùng chạm vào bất cứ đâu thì bật nhạc lên
+    if (!isPlaying && audioRef.current) {
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => console.log("Lỗi tự động phát:", err));
+    }
+  };
+
+  const toggleMusic = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation(); // Ngăn sự kiện chạm lan ra ngoài gây lỗi logic
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
         audioRef.current.play()
           .then(() => setIsPlaying(true))
-          .catch((err) => console.log("Chờ tương tác thêm:", err));
+          .catch(() => {});
       }
-      window.removeEventListener('touchstart', handleFirstInteraction);
-      window.removeEventListener('click', handleFirstInteraction);
-    };
-
-    window.addEventListener('touchstart', handleFirstInteraction);
-    window.addEventListener('click', handleFirstInteraction);
-
-    return () => {
-      window.removeEventListener('touchstart', handleFirstInteraction);
-      window.removeEventListener('click', handleFirstInteraction);
-    };
-  }, [isPlaying]);
-
-  const toggleMusic = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (audioRef.current) {
-      if (isPlaying) audioRef.current.pause();
-      else audioRef.current.play().catch(() => {});
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -193,7 +188,13 @@ export default function WeddingInvitation() {
   };
 
   return (
-    <div className={`bg-[#1a1a1a] min-h-screen flex justify-center p-0 md:p-4 font-sans text-gray-800 relative ${playfair.className}`}>
+    <div 
+      // Gắn sự kiện chạm và click vào bao trùm toàn bộ app
+      onClick={handleGlobalTouch}
+      onTouchStart={handleGlobalTouch}
+      className={`bg-[#f4f4f4] min-h-screen flex justify-center p-0 md:p-4 font-sans text-gray-800 relative ${playfair.className}`}
+      style={{ colorScheme: 'light' }}
+    >
       <audio ref={audioRef} src="/wedding-music.mp3" loop />
 
       {/* KHUNG NỘI DUNG CHÍNH */}
@@ -205,11 +206,14 @@ export default function WeddingInvitation() {
         <div className="fixed top-6 right-6 z-50 md:right-[calc(50%-200px)]" data-aos="zoom-in">
           <button
             onClick={toggleMusic}
+            onTouchStart={toggleMusic}
             className={`w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-white/40 active:scale-90 transition-all overflow-hidden ${isPlaying ? 'animate-heartbeat' : ''}`}
           >
             {isPlaying ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src="/gif-icon-music.gif" alt="Playing" className="w-7 h-7 object-contain" />
             ) : (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src="/stop-music-icon.png" alt="Stopped" className="w-7 h-7 object-contain opacity-60" />
             )}
           </button>
@@ -218,6 +222,7 @@ export default function WeddingInvitation() {
         {/* 1. HERO SECTION */}
         <section className="relative h-[750px] w-full flex flex-col items-center justify-between py-4">
           <div className="absolute inset-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/anh-bia.jpg" className="w-full h-full object-cover animate-zoom-in" alt="Bìa" />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#fdfcfb]"></div>
           </div>
@@ -229,7 +234,7 @@ export default function WeddingInvitation() {
         </div>
 
           <div className="relative z-10 text-center w-full px-12 mb-10 space-y-8">
-            <div className="space-y-2 pt-4 pb-4 border-t border-b border-gray-800/80" data-aos="zoom-in" data-aos-delay="300">
+            <div className="space-y-2 pt-4 pb-4 border-t border-b border-gray-900/80" data-aos="zoom-in" data-aos-delay="300">
               <p className="uppercase tracking-[0.4em] text-[16px] text-gray-900 font-bold">Thư mời tiệc cưới</p>
               <p className="text-lg font-light text-gray-900">9:00 - Thứ ba</p>
               <div className="text-4xl font-bold tracking-widest text-gray-900">11.08.2026</div>
@@ -243,13 +248,13 @@ export default function WeddingInvitation() {
         </section>
 
         {/* 2. THÔNG TIN GIA ĐÌNH */}
-        <section className="py-12 text-center bg-white relative z-20">
-          <div className="mb-12 italic text-[20px] text-gray-800 space-y-1 text-xs" data-aos="fade-up">
+        <section className="py-8 text-center bg-white relative z-20">
+          <div className="mb-12 italic text-[16px] text-gray-800 space-y-1 text-xs" data-aos="fade-up">
             <p>“Hôn nhân là chuyện cả đời,</p>
             <p>Yêu người vừa ý, cưới người mình thương...”</p>
           </div>
           
-          <div className="flex justify-between mb-12 text-[14px] uppercase tracking-widest leading-loose px-4">
+          <div className="flex justify-between mb-12 text-[13px] uppercase tracking-widest leading-loose px-1">
             <div className="w-1/2" data-aos="fade-right">
               <p className="font-bold text-gray-900 mb-2">Nhà Trai</p>
               <p className="font-bold text-gray-900 leading-tight">Lê Cao Trung</p>
@@ -269,13 +274,15 @@ export default function WeddingInvitation() {
           </div>
 
           <div className="flex gap-2 h-72 p-2 bg-stone-300 rounded-sm border border-stone-200 shadow-inner " data-aos="fade-up">
+             {/* eslint-disable-next-line @next/next/no-img-element */}
              <img src="/chure.png" className="w-1/2 h-full object-cover rounded shadow-sm hover:scale-105 transition-transform duration-500" alt="Groom" />
+             {/* eslint-disable-next-line @next/next/no-img-element */}
              <img src="/codau.JPG" className="w-1/2 h-full object-cover rounded shadow-sm hover:scale-105 transition-transform duration-500" alt="Bride" />
           </div>
         </section>
 
         {/* 3. LỄ THÀNH HÔN */}
-        <section className="py-12 px-4 bg-white text-center">
+        <section className="py-8 px-4 bg-white text-center">
           <div className="flex justify-center items-center gap-2 mb-2" data-aos="fade-up">
             <div className="w-12 h-[1px] bg-gray-400"></div>
             <p className={`text-4xl ${dancingScript.className}`}>Thư Mời</p>
@@ -284,8 +291,11 @@ export default function WeddingInvitation() {
           <p className="text-[11px] uppercase tracking-widest text-gray-500 mb-10" data-aos="fade-up" data-aos-delay="100">Tham dự lễ cưới Nhất Lập & Quỳnh Như</p>
           
           <div className="flex items-end justify-center gap-1.5 mb-10 h-64">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/anh-phu-1.jpg" className="w-[30%] h-[80%] object-cover shadow-sm mb-6 border border-stone-200 rounded" alt="Left" data-aos="fade-right" data-aos-delay="200" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/anh-chinh.jpg" className="w-[40%] h-full object-cover shadow-md z-10 border border-stone-200 rounded" alt="Center" data-aos="zoom-in" data-aos-delay="200" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/anh-phu-2.jpg" className="w-[30%] h-[80%] object-cover shadow-sm mb-6 border border-stone-200 rounded" alt="Right" data-aos="fade-left" data-aos-delay="200" />
           </div>
 
@@ -296,7 +306,7 @@ export default function WeddingInvitation() {
             <div className="flex items-center justify-center gap-4 mb-6">
               <div className="text-center w-[60px]"><p className="text-sm font-bold" data-aos="fade-right">9:00</p></div>
               <div className="h-12 w-[1px] bg-gray-300"></div>
-              <div className="text-center w-[100px]" data-aos="zoom-in" data-aos-delay="200">
+              <div className="text-center w-[100px]" data-aos="zoom-in" data-aos-delay="100">
                 <p className="text-[11px] font-bold uppercase tracking-widest">Thứ ba</p>
                 <p className="text-4xl font-black my-1 text-[#8b0000]">11</p>
                 <p className="text-[11px] font-bold uppercase tracking-widest">Tháng 8</p>
@@ -306,7 +316,7 @@ export default function WeddingInvitation() {
             </div>
             
           <p className="text-[11px] italic text-gray-600 mb-4" data-aos="fade-up">(Tức Ngày 29 Tháng 6 Năm Bính Ngọ)</p>
-          <p className="text-sm font-bold" data-aos="fade-up" data-aos-delay="400">Tại Tư Gia Nhà Trai</p>
+          <p className="text-sm font-bold" data-aos="fade-up" data-aos-delay="200">Tại Tư Gia Nhà Trai</p>
           </div>
         </section>
 
@@ -339,19 +349,21 @@ export default function WeddingInvitation() {
         </section>
       
          {/* 5. ĐỊA ĐIỂM & BẢN ĐỒ */}
-        <div className="text-center p-6" data-aos="fade-up">
-          <h2 className="text-xl font-bold uppercase mb-2">Lễ Thành Hôn</h2>
-          <p className="text-sm mb-4">Vào lúc 9:00 - Thứ Ba</p>
+        <div className="text-center p-6">
+          <h2 className="text-xl font-bold uppercase mb-2" data-aos="fade-up">Lễ Thành Hôn</h2>
+          <p className="text-sm mb-4" data-aos="fade-up">Vào lúc 9:00 - Thứ Ba</p>
           <div className="flex justify-center items-center gap-4 mb-4">
-            <span className="text-4xl">11</span>
+            <span className="text-4xl" data-aos="fade-right">11</span>
             <div className="text-left border-l pl-4 border-stone-400">
-              <p className="text-xs uppercase">Tháng 8</p>
-              <p className="text-xs">Năm 2026</p>
+              <p className="text-xs uppercase" data-aos="fade-left">Tháng 8</p>
+              <p className="text-xs" data-aos="fade-left">Năm 2026</p>
             </div>
           </div>
-          <p className="text-xs italic mb-6">(Tức Ngày 29 Tháng 6 Năm Bính Ngọ)</p>
+          <p className="text-xs italic mb-6" data-aos="fade-up">
+            (Tức Ngày 29 Tháng 6 Năm Bính Ngọ)
+          </p>
 
-          <div className="bg-stone-50 p-4 rounded-xl border border-stone-100">
+          <div className="bg-stone-50  rounded-xl border border-stone-100" data-aos="fade-up" data-aos-delay="200">
             <p className="font-bold mb-1">TẠI TƯ GIA NHÀ TRAI</p>
             <p className="text-xs mb-4">Ba gia – An Điềm, Thôn Xuân Hòa, Xã Ba Gia, Tỉnh Quảng Ngãi</p>
             <div className="w-full h-56 rounded-xl overflow-hidden mb-4 shadow-inner">
@@ -374,8 +386,8 @@ export default function WeddingInvitation() {
         </div>
 
         {/* 6. ALBUM HÌNH CƯỚI */}
-        <section className="py-10 px-4 bg-white">
-          <div className="flex items-center justify-center gap-4 mb-10" data-aos="fade-up">
+        <section className="py-4 px-4 bg-white">
+          <div className="flex items-center justify-center gap-4 mb-4" data-aos="fade-up">
             <h3 className={`text-3xl text-gray-800 ${dancingScript.className}`}>Album hình cưới</h3>
             <div className="flex-1 h-[1px] bg-gray-300 relative flex items-center justify-center max-w-[120px]">
                <span className="absolute bg-white px-2 text-[10px]">♥️</span>
@@ -383,17 +395,27 @@ export default function WeddingInvitation() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-1.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A1" data-aos="fade-right" data-aos-delay="100" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-3.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A3" data-aos="fade-right" data-aos-delay="150" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-5.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A5" data-aos="fade-right" data-aos-delay="200" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-7.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A7" data-aos="fade-right" data-aos-delay="250" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-9.jpg" className="w-full aspect-[4/3] object-cover rounded shadow-md" alt="A9" data-aos="fade-right" data-aos-delay="300" />
             </div>
             <div className="flex flex-col gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-2.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A2" data-aos="fade-left" data-aos-delay="100" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-4.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A4" data-aos="fade-left" data-aos-delay="150" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-6.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A6" data-aos="fade-left" data-aos-delay="200" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-8.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A8" data-aos="fade-left" data-aos-delay="250" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/anh-album-10.jpg" className="w-full aspect-[4/3] object-cover rounded shadow-md" alt="A10" data-aos="fade-left" data-aos-delay="300" />
             </div>
           </div>
@@ -402,6 +424,7 @@ export default function WeddingInvitation() {
         {/* 7. PHẦN KẾT */}
         <section className="relative min-h-[750px] w-full flex flex-col items-center justify-end overflow-hidden">
           <div className="absolute inset-0 z-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/anh-cuoi-cuoi.jpg"
               className="w-full h-full object-cover brightness-[0.9] blur-[2px]"
@@ -414,7 +437,7 @@ export default function WeddingInvitation() {
             
             <div className="w-full px-8 space-y-8 mb-15">
               <button
-                onClick={() => setShowRSVP(true)}
+                onClick={(e) => { e.stopPropagation(); setShowRSVP(true); }}
                 className="w-full py-4 bg-stone-800/90 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-2xl backdrop-blur-md border border-white/10 active:scale-95 transition-all"
               >
                 Xác nhận tham dự lễ cưới
@@ -422,7 +445,7 @@ export default function WeddingInvitation() {
               
               <div className="flex justify-center">
                 <button
-                  onClick={() => setShowGifts(true)}
+                  onClick={(e) => { e.stopPropagation(); setShowGifts(true); }}
                   className="w-3/10 py-3 bg-[#8b0000]/90 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg backdrop-blur-md border border-white/10 active:scale-95 transition-all"
                 >
                   Wedding gift
@@ -450,7 +473,10 @@ export default function WeddingInvitation() {
 
         {/* MODAL RSVP */}
         {showRSVP && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+            onClick={(e) => e.stopPropagation()} // Ngăn chặn sự kiện nổi bọt ở background của modal
+          >
             <div className="bg-white w-full max-w-[340px] rounded-[20px] p-8 relative animate-in zoom-in duration-300 shadow-2xl border border-stone-100">
               <button onClick={() => setShowRSVP(false)} className="absolute top-4 right-4 text-gray-400 text-xl font-light">✕</button>
               
@@ -483,13 +509,17 @@ export default function WeddingInvitation() {
 
         {/* MODAL QUÀ TẶNG */}
         {showGifts && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+            onClick={(e) => e.stopPropagation()} // Ngăn chạm vào modal kích hoạt sự kiện body
+          >
             <div className="bg-white w-full max-w-[320px] rounded-[20px] p-8 relative text-center shadow-2xl border border-stone-100">
               <button onClick={() => setShowGifts(false)} className="absolute top-4 right-4 text-gray-400 text-xl font-light">✕</button>
               <h3 className={`text-3xl text-gray-800 mb-1 ${greatVibes.className}`}>Gửi Mừng Cưới</h3>
               <div className="w-24 h-[1px] bg-gray-800 mx-auto mb-6 opacity-40"></div>
 
               <div className="bg-stone-50 p-4 rounded-xl mb-4 border border-stone-200 shadow-inner">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/QRCODE-CR.png" className="w-40 h-40 mx-auto mix-blend-multiply" alt="QR" />
               </div>
               <p className="font-bold text-gray-800 text-sm uppercase">VCB - Le Cao Nhat Lap</p>
@@ -499,7 +529,6 @@ export default function WeddingInvitation() {
         )}
       </main>
 
-      {/* Đã xóa bỏ phần font import url trong css để tận dụng triệt để next/font/google */}
       <style jsx global>{`
         @keyframes fall-sway {
           0% { transform: translateY(-30px) translateX(0) rotate(0deg); opacity: 0; }
