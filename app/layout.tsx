@@ -14,16 +14,18 @@ const geistMono = Geist_Mono({
 
 // --- ĐÂY LÀ PHẦN SEO VÀ CHIA SẺ LINK ---
 export const metadata: Metadata = {
+  //  Khai báo tên miền gốc của bạn
+  metadataBase: new URL('https://thiepcuoi-nhatlap-quynhnhu.vercel.app/'),
   title: 'Thiệp Mời Đám Cưới | Nhất Lập ❤️ Quỳnh Như',
   description: 'Trân trọng kính mời đến dự lễ thành hôn của Nhất Lập và Quỳnh Như vào ngày 11.08.2026. Sự hiện diện của bạn là niềm vinh hạnh cho gia đình chúng tôi!',
   openGraph: {
     title: 'Thiệp Mời Đám Cưới | Nhất Lập & Quỳnh Như',
     description: 'Trân trọng kính mời đến dự lễ thành hôn vào lúc 9:00 - Thứ Ba, 11.08.2026. Click để xem chi tiết!',
-    url: 'https://thiepcuoi-nhatlap-quynhnhu.com', // Đổi thành tên miền thật của bạn sau khi deploy
+    url: '/', // Đổi thành tên miền thật của bạn sau khi deploy
     siteName: 'Đám Cưới Nhất Lập & Quỳnh Như',
     images: [
       {
-        url: '/anh-cuoi-cuoi.jpg', // Nhớ thêm ảnh này vào thư mục public nhé
+        url: '/anh-cuoi-cuoi.jpg', // Nhớ thêm ảnh này vào thư mục public nhé // Next.js sẽ tự ghép thành https://thiepcuoi-nhatlap-quynhnhu.com/anh-cuoi-cuoi.jpg
         width: 1200,
         height: 630,
         alt: 'Ảnh cưới Nhất Lập và Quỳnh Như',
