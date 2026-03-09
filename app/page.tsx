@@ -136,17 +136,41 @@ export default function WeddingInvitation() {
   }, []);
 
   // --- 2. LOGIC NHẠC (CHẠM LÀ PHÁT) ---
-  const handleGlobalTouch = () => {
-    // Nếu nhạc chưa bật, hễ người dùng chạm vào bất cứ đâu thì bật nhạc lên
-    if (!isPlaying && audioRef.current) {
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => console.log("Lỗi tự động phát:", err));
-    }
-  };
+ // Xử lý tự động bật nhạc khi người dùng tương tác lần đầu với trang web
+  useEffect(() => {
+    const initAudio = () => {
+      if (audioRef.current && audioRef.current.paused && !isPlaying) {
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setIsPlaying(true);
+              // Khi phát thành công, gỡ bỏ các sự kiện lắng nghe để tránh lặp lại
+              document.removeEventListener('click', initAudio);
+              document.removeEventListener('touchstart', initAudio);
+            })
+            .catch((error) => {
+              console.log("Trình duyệt tạm thời chặn nhạc, chờ tương tác tiếp theo:", error);
+            });
+        }
+      }
+    };
 
-  const toggleMusic = (e: React.MouseEvent | React.TouchEvent) => {
-    e.stopPropagation(); // Ngăn sự kiện chạm lan ra ngoài gây lỗi logic
+    // Lắng nghe trực tiếp trên document sẽ nhận diện tương tác nhạy hơn
+    document.addEventListener('click', initAudio);
+    document.addEventListener('touchstart', initAudio, { passive: true });
+
+    return () => {
+      document.removeEventListener('click', initAudio);
+      document.removeEventListener('touchstart', initAudio);
+    };
+  }, [isPlaying]);
+
+  // Hàm bật/tắt nhạc thủ công qua nút
+  const toggleMusic = (e: React.MouseEvent) => {
+    e.stopPropagation(); 
+    e.preventDefault(); // Ngăn hành vi mặc định
+    
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
@@ -154,7 +178,7 @@ export default function WeddingInvitation() {
       } else {
         audioRef.current.play()
           .then(() => setIsPlaying(true))
-          .catch(() => {});
+          .catch((err) => console.log("Lỗi bật nhạc:", err));
       }
     }
   };
@@ -190,12 +214,10 @@ export default function WeddingInvitation() {
   return (
     <div 
       // Gắn sự kiện chạm và click vào bao trùm toàn bộ app
-      onClick={handleGlobalTouch}
-      onTouchStart={handleGlobalTouch}
       className={`bg-[#f4f4f4] min-h-screen flex justify-center p-0 md:p-4 font-sans text-gray-800 relative ${playfair.className}`}
       style={{ colorScheme: 'light' }}
     >
-      <audio ref={audioRef} src="/wedding-music.mp3" loop />
+      <audio ref={audioRef} src="/wedding-music.mp3" loop preload="auto" />
 
       {/* KHUNG NỘI DUNG CHÍNH */}
       <main className="w-full max-w-[450px] bg-[#fdfcfb] min-h-screen shadow-2xl relative overflow-x-hidden">
@@ -206,7 +228,7 @@ export default function WeddingInvitation() {
         <div className="fixed top-6 right-6 z-50 md:right-[calc(50%-200px)]" data-aos="zoom-in">
           <button
             onClick={toggleMusic}
-            onTouchStart={toggleMusic}
+            // ĐÃ XÓA onTouchStart={toggleMusic} ĐỂ FIX LỖI "GHOST CLICK"
             className={`w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-white/40 active:scale-90 transition-all overflow-hidden ${isPlaying ? 'animate-heartbeat' : ''}`}
           >
             {isPlaying ? (
