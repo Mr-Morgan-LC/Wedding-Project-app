@@ -350,8 +350,8 @@ export default function WeddingInvitation() {
       
          {/* 5. ĐỊA ĐIỂM & BẢN ĐỒ */}
         <div className="text-center p-6">
-          <h2 className="text-xl font-bold uppercase mb-2" data-aos="fade-up">Lễ Thành Hôn</h2>
-          <p className="text-sm mb-4" data-aos="fade-up">Vào lúc 9:00 - Thứ Ba</p>
+          <h2 className="text-xl font-bold uppercase mb-2" data-aos="zoom-in">Lễ Thành Hôn</h2>
+          <p className="text-sm mb-4" data-aos="zoom-in">Vào lúc 9:00 - Thứ Ba</p>
           <div className="flex justify-center items-center gap-4 mb-4">
             <span className="text-4xl" data-aos="fade-right">11</span>
             <div className="text-left border-l pl-4 border-stone-400">
