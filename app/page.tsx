@@ -1,6 +1,5 @@
 'use client';
 
-import { Great_Vibes, Dancing_Script, Playfair_Display, Lora } from 'next/font/google';
 import { useEffect, useState, useRef } from 'react';
 import localFont from 'next/font/local';
 import AOS from "aos";
@@ -8,29 +7,17 @@ import "aos/dist/aos.css";
 
 // --- CẤU HÌNH FONT CHUẨN NEXTJS ---
 const edwardian = localFont({ 
-  src: './fonts/UTM-Edwardian.ttf', // Kiểm tra xem file này có trong thư mục fonts chưa
-});
-
-const greatVibes = Great_Vibes({
-  weight: '400',
-  subsets: ['vietnamese'],
+  src: '../public/fonts/UTM-Edwardian.ttf', // Kiểm tra xem file này có trong thư mục fonts chưa
   display: 'swap',
 });
 
-const dancingScript = Dancing_Script({
-  weight: ['400', '700'],
-  subsets: ['latin'],
+const uvfa = localFont({ 
+  src: '../public/fonts/UVF-a.ttf', // Kiểm tra xem file này có trong thư mục fonts chưa
   display: 'swap',
 });
 
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  display: 'swap',
-});
-
-// Thêm font Lora cho phần ngày tháng (nhìn rất sang cho số)
-const lora = Lora({
-  subsets: ['latin'],
+const fcclass = localFont({ 
+  src: '../public/fonts/FC-Classy-Vogue.otf', // Kiểm tra xem file này có trong thư mục fonts chưa
   display: 'swap',
 });
 
@@ -206,7 +193,7 @@ export default function WeddingInvitation() {
 
   return (
     // Đổi background ngoài cùng sang tone be nhạt
-    <div className={`bg-[#F5EFE6] min-h-screen flex justify-center p-0 md:p-4 font-sans text-gray-800 relative ${playfair.className}`}>
+    <div className={`bg-[#F5EFE6] min-h-screen flex justify-center p-0 md:p-4 font-sans text-gray-800 relative ${fcclass.className}`}>
       <audio ref={audioRef} src="/wedding-music.mp3" loop preload="auto" />
 
       {/* KHUNG NỘI DUNG CHÍNH - Khóa cuộn màn hình nếu chưa bấm Mở Thiệp */}
@@ -258,7 +245,7 @@ export default function WeddingInvitation() {
       {isOpened && (
         <div className="animate-in fade-in duration-700 mt-4 space-y-2">
           <p className="text-lg font-light text-gray-900">11:00 - Thứ ba</p>
-          <div className={`text-4xl font-bold tracking-widest text-gray-900 ${lora.className}`}>11.08.2026</div>
+          <div className={`text-4xl font-bold tracking-widest text-gray-900 ${fcclass.className}`}>11.08.2026</div>
         </div>
       )}
     </div>
@@ -279,7 +266,7 @@ export default function WeddingInvitation() {
     {isOpened && (
       <div className="animate-in fade-in duration-1000" data-aos="zoom-in">
          <p className="text-sm uppercase tracking-[0.2em] text-gray-800 italic">Trân trọng kính mời</p>
-         <p className={`text-4xl font-black text-gray-900 mt-1 ${dancingScript.className}`}>v/c Anh Linh</p>
+         <p className={`text-3xl font-black text-gray-900 mt-5 ${uvfa.className}`}>vc Anh Linh</p>
       </div>
     )}
   </div>
@@ -292,7 +279,7 @@ export default function WeddingInvitation() {
 
             {/* 2. THÔNG TIN GIA ĐÌNH */}
 <section className="py-8 text-center bg-[#FAF6F0] relative z-20">
-  <div className="mb-12 italic text-[16px] text-gray-900 space-y-1" data-aos="fade-up">
+  <div className={`mb-12 italic text-[18px] text-gray-900 space-y-1 ${uvfa.className}`} data-aos="fade-up">  
     <p>“Hôn nhân là chuyện cả đời,</p>
     <p>Yêu người vừa ý, Cưới người Mình thương...”</p>
   </div>
@@ -379,7 +366,7 @@ export default function WeddingInvitation() {
                   <div className="h-12 w-[1px] bg-[#8c7462]/30"></div>
                   <div className="text-center w-[100px]" data-aos="zoom-in" data-aos-delay="100">
                     <p className="text-xs font-bold uppercase tracking-widest">Thứ ba</p>
-                    <p className={`text-4xl font-black my-1 text-[#700000] ${lora.className}`}>11</p>
+                    <p className={`text-4xl font-black tracking-widest my-1 text-[#700000] ${fcclass.className}`}>11</p>
                     <p className="text-xs font-bold uppercase tracking-widest">Tháng 8</p>
                   </div>
                   <div className="h-12 w-[1px] bg-[#8c7462]/30"></div>
@@ -391,9 +378,9 @@ export default function WeddingInvitation() {
               </div>
               <div className="bg-white p-4 rounded-xl border border-[#e6dac3] shadow-sm" >
                 <h2 className="text-xm font-bold uppercase mb-2 text-[#700000]" >Tiệc Mừng Lễ Thành Hôn</h2>
-              <p className="text-sm mb-4 font-bold" data-aos="zoom-in">Vào lúc 11 :00 - Thứ Ba</p>
+              <p className="text-sm mb-4 font-bold" data-aos="zoom-in">Vào lúc 11:00 - Thứ Ba</p>
               <div className="flex justify-center items-center gap-4 mb-4">
-                <span className={`text-4xl font-bold text-[#910000] ${lora.className}`} data-aos="fade-right">11</span>
+                <span className={`text-4xl font-bold tracking-widest text-[#910000] ${fcclass.className}`} data-aos="fade-right">11</span>
                 <div className="text-left border-l pl-4 border-[#8c7462]/30">
                   <p className="text-xs font-bold uppercase" data-aos="fade-left">Tháng 8</p>
                   <p className="text-xs font-bold" data-aos="fade-left">Năm 2026</p>
@@ -413,8 +400,8 @@ export default function WeddingInvitation() {
             {/* 4. LỊCH THÁNG */}
             <section className="py-8 px-8 bg-[#FDFBF7] border-y border-[#e6dac3]" data-aos="fade-up">
               <div className="flex justify-between items-end mb-6 text-[#910000]">
-                <span className={`text-4xl ${dancingScript.className}`}>Tháng 8</span>
-                <span className={`text-5xl font-black ${lora.className}`}>2026</span>
+                <span className={`text-4xl ${uvfa.className}`}>Tháng 8</span>
+                <span className={`text-5xl font-black ${fcclass.className}`}>2026</span>
               </div>
               <div className="border border-[#8c7462]/30 rounded overflow-hidden bg-white shadow-sm">
                 <div className="grid grid-cols-7 bg-[#8c7462] text-white text-[10px] py-2 font-bold text-center">
@@ -440,7 +427,7 @@ export default function WeddingInvitation() {
           
             {/* 5. ĐỊA ĐIỂM & BẢN ĐỒ */}
             <div className="text-center p-6 bg-[#FAF6F0]">
-              <h3 className={`text-3xl text-gray-900 mb-4 ${dancingScript.className}`}>Địa điểm tổ chức</h3>
+              <h3 className={`text-3xl text-gray-900 mb-4 ${uvfa.className}`}>Địa điểm tổ chức</h3>
             
               <div className="bg-white p-4 rounded-xl border border-[#e6dac3] shadow-sm" data-aos="fade-up" data-aos-delay="200">
                 <p className="font-bold mb-1 text-Black">TẠI TƯ GIA NHÀ TRAI</p>
@@ -467,7 +454,7 @@ export default function WeddingInvitation() {
             {/* 6. ALBUM HÌNH CƯỚI */}
             <section className="py-4 px-4 bg-[#FAF6F0]">
               <div className="flex items-center justify-center gap-4 mb-8" data-aos="fade-up">
-                <h3 className={`text-3xl text-gray-900 ${dancingScript.className}`}>Album hình cưới</h3>
+                <h3 className={`text-3xl text-gray-900 ${uvfa.className}`}>Album hình cưới</h3>
                 <div className="flex-1 h-[1px] bg-black/30 relative flex items-center justify-center max-w-[120px]">
                    <span className="absolute bg-[#FAF6F0] px-2 text-[10px]">♥️</span>
                 </div>
@@ -533,11 +520,11 @@ export default function WeddingInvitation() {
                 </div>
 
                 <div className="w-full py-5 mb-2 bg-[#8c7462]/10 backdrop-blur-[6px] border-y border-white/20 text-center">
-                  <p className={`text-6xl text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${greatVibes.className}`}>
+                  <p className={`text-6xl mb-6 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${uvfa.className}`}>
                     Thank You
                   </p>
                   
-                  <div className="h-[1px] w-10 bg-white/40 mx-auto"></div>
+                  <div className="h-[1px] w-40 bg-white/40 mx-auto"></div>
                   
                   <p className="text-[13px] pt-4 px-4 italic font-light text-white/95 tracking-wide drop-shadow-md">
                     Sự hiện diện của Quý Khách là lời chúc phúc trọn vẹn nhất cho chúng tôi và là niềm vinh dự của gia đình!
@@ -561,7 +548,7 @@ export default function WeddingInvitation() {
             <div className="bg-[#FAF6F0] w-full max-w-[340px] rounded-[20px] p-8 relative animate-in zoom-in duration-300 shadow-2xl border border-[#e6dac3]">
               <button onClick={() => setShowRSVP(false)} className="absolute top-4 right-4 text-gray-400 text-xl font-light hover:text-[#8c7462]">✕</button>
               
-              <h3 className={`text-3xl text-center mb-1 text-[#8c7462] ${greatVibes.className}`}>Xác Nhận Tham Dự</h3>
+              <h3 className={`text-3xl text-center mb-1 text-[#8c7462] ${uvfa.className}`}>Xác Nhận Tham Dự</h3>
               <div className="w-24 h-[1px] bg-[#8c7462] mx-auto mb-8 opacity-40"></div>
 
               <form onSubmit={handleRSVPSubmit} className="space-y-4">
@@ -596,7 +583,7 @@ export default function WeddingInvitation() {
           >
             <div className="bg-[#FAF6F0] w-full max-w-[320px] rounded-[20px] p-8 relative text-center shadow-2xl border border-[#e6dac3]">
               <button onClick={() => setShowGifts(false)} className="absolute top-4 right-4 text-gray-400 text-xl font-light hover:text-[#8c7462]">✕</button>
-              <h3 className={`text-3xl text-[#8c7462] mb-1 ${greatVibes.className}`}>Gửi Mừng Cưới</h3>
+              <h3 className={`text-3xl text-[#8c7462] mb-1 ${uvfa.className}`}>Gửi Mừng Cưới</h3>
               <div className="w-24 h-[1px] bg-[#8c7462] mx-auto mb-6 opacity-40"></div>
 
               <div className="bg-white p-4 rounded-xl mb-4 border border-[#e6dac3] shadow-inner">
