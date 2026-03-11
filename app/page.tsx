@@ -362,15 +362,15 @@ export default function WeddingInvitation() {
                 <p className="text-xs font-bold text-gray-700 mb-6" >Vào Lúc</p>
                 
                 <div className="flex items-center justify-center gap-4 mb-6">
-                  <div className="text-center w-[60px]"><p className="text-sm font-bold" data-aos="fade-right">9:00</p></div>
+                  <div className="text-center w-[80px]"><p className="text-sm font-bold" data-aos="fade-right">9:00</p></div>
                   <div className="h-12 w-[1px] bg-[#8c7462]/30"></div>
                   <div className="text-center w-[100px]" data-aos="zoom-in" data-aos-delay="100">
                     <p className="text-xs font-bold uppercase tracking-widest">Thứ ba</p>
                     <p className={`text-4xl font-black tracking-widest my-1 text-[#700000] ${fcclass.className}`}>11</p>
-                    <p className="text-xs font-bold uppercase tracking-widest">Tháng 8</p>
+                    <p className="text-xs font-bold tracking-widest">Tháng 8</p>
                   </div>
                   <div className="h-12 w-[1px] bg-[#8c7462]/30"></div>
-                  <div className="text-center w-[60px]"><p className="text-sm font-bold" data-aos="fade-left">Năm 2026</p></div>
+                  <div className="text-center w-[80px]"><p className="text-sm font-bold" data-aos="fade-left">Năm 2026</p></div>
                 </div>
                 
               <p className="text-xs italic text-gray-600 mb-4" data-aos="fade-up">(Tức Ngày 29 Tháng 6 Năm Bính Ngọ)</p>
@@ -382,7 +382,7 @@ export default function WeddingInvitation() {
               <div className="flex justify-center items-center gap-4 mb-4">
                 <span className={`text-4xl font-bold tracking-widest text-[#910000] ${fcclass.className}`} data-aos="fade-right">11</span>
                 <div className="text-left border-l pl-4 border-[#8c7462]/30">
-                  <p className="text-xs font-bold uppercase" data-aos="fade-left">Tháng 8</p>
+                  <p className="text-xs font-bold" data-aos="fade-left">Tháng 8</p>
                   <p className="text-xs font-bold" data-aos="fade-left">Năm 2026</p>
                 </div>
               </div>
@@ -520,13 +520,13 @@ export default function WeddingInvitation() {
                 </div>
 
                 <div className="w-full py-5 mb-2 bg-[#8c7462]/10 backdrop-blur-[6px] border-y border-white/20 text-center">
-                  <p className={`text-6xl mb-6 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${uvfa.className}`}>
+                  <p className={`text-6xl mb-6 mt-8 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${uvfa.className}`}>
                     Thank You
                   </p>
                   
                   <div className="h-[1px] w-40 bg-white/40 mx-auto"></div>
                   
-                  <p className="text-[13px] pt-4 px-4 italic font-light text-white/95 tracking-wide drop-shadow-md">
+                  <p className="text-[14px] pt-4 px-4 italic font-light text-white/95 tracking-wide drop-shadow-md">
                     Sự hiện diện của Quý Khách là lời chúc phúc trọn vẹn nhất cho chúng tôi và là niềm vinh dự của gia đình!
                   </p>
                 </div>
