@@ -268,7 +268,7 @@ export default function WeddingInvitation() {
                 <p>Yêu người vừa ý, Cưới người Mình thương...”</p>
               </div>
 
-              <div className="grid grid-cols-[1fr_auto_1fr] items-stretch mb-12 text-sm uppercase tracking-widest leading-loose gap-x-1">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-stretch mb-12 text-xs uppercase tracking-widest leading-loose gap-x-1">
                 <div className="flex flex-col items-end text-right justify-center" data-aos="fade-right">
                   <h3 className="font-bold text-black mb-2">Nhà Trai</h3>
                   <p className="text-gray-900 leading-tight">Lê Cao Trung</p>
