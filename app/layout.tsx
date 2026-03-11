@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Thiệp mời đám cưới Nhất Lập & Quỳnh Như",
     description: "Trân trọng kính mời bạn đến dự tiệc cưới của Nhất Lập & Quỳnh Như!",
-    url: "https://thiepcuoi-nhatlap-quynhnhu.vercel.app/", // Thay bằng domain thật của bạn
+    url: "https://wedding-nhatlap-quynhnhu.vercel.app/", // Thay bằng domain thật của bạn
     siteName: "Nhất Lập & Quỳnh Như Wedding",
     images: [
       {
