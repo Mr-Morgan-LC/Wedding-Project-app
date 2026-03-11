@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     siteName: 'Đám Cưới Nhất Lập & Quỳnh Như',
     images: [
       {
-        url: `${DOMAIN}/anh-cuoi-cuoi.jpg`, // Đã đổi thành link tuyệt đối
+        url: `${DOMAIN}/anh-web.jpg`, // Đã đổi thành link tuyệt đối
         width: 1200,
         height: 630,
         alt: 'Ảnh cưới Nhất Lập và Quỳnh Như',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Thiệp Mời Đám Cưới | Nhất Lập ❤️ Quỳnh Như',
     description: 'Trân trọng kính mời đến dự lễ thành hôn vào ngày 11.08.2026.',
-    images: [`${DOMAIN}/anh-cuoi-cuoi.jpg`], // Đã đổi thành link tuyệt đối
+    images: [`${DOMAIN}/anh-web.jpg`], // Đã đổi thành link tuyệt đối
   },
 };
 
