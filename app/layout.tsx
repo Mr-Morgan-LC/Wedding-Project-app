@@ -1,56 +1,45 @@
-import type { Metadata } from "next";
-import localFont from 'next/font/local';
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-
-const uvfa = localFont({ 
-  src: '../public/fonts/UVF-a.ttf', // Kiểm tra xem file này có trong thư mục fonts chưa
-  variable: '--font-uvfa',    // Tạo biến CSS để dùng nếu cần
-  display: 'swap',
-});
-
-const fcclass = localFont({ 
-  src: '../public/fonts/FC-Classy-Vogue.otf', // Kiểm tra xem file này có trong thư mục fonts chưa
-  variable: '--font-fcclass',    // Tạo biến CSS để dùng nếu cần
-  display: 'swap',
-});
-
-const edwardian = localFont({ 
-  src: '../public/fonts/UTM-Edwardian.ttf', // Kiểm tra xem file này có trong thư mục fonts chưa
-  variable: '--font-edwardian',
-  display: 'swap',
-});
-
-// --- ĐÂY LÀ PHẦN SEO VÀ CHIA SẺ LINK ---
-// Đổi DOMAIN thành tên miền thật của bạn nếu có mua tên miền riêng nhé
-const DOMAIN = 'https://thiepcuoi-nhatlap-quynhnhu.vercel.app';
-
+// --- TỐI ƯU METADATA (Dành cho việc chia sẻ link) ---
 export const metadata: Metadata = {
-  metadataBase: new URL(DOMAIN),
-  title: 'Thiệp Mời Đám Cưới | Nhất Lập ❤️ Quỳnh Như',
-  description: 'Trân trọng kính mời đến dự lễ thành hôn của Nhất Lập và Quỳnh Như vào ngày 11.08.2026. Sự hiện diện của bạn là niềm vinh hạnh cho gia đình chúng tôi!',
+  title: "Thiệp mời đám cưới Nhất Lập & Quỳnh Như",
+  description: "Trân trọng kính mời bạn đến tham dự lễ thành hôn của chúng mình vào ngày 11/08/2026. Sự hiện diện của bạn là niềm vinh dự cho gia đình chúng mình!",
+  keywords: ["Wedding Invitation", "Nhất Lập", "Quỳnh Như", "Thiệp cưới online"],
+  authors: [{ name: "Morgan" }],
   openGraph: {
-    title: 'Thiệp Mời Đám Cưới | Nhất Lập & Quỳnh Như',
-    description: 'Trân trọng kính mời đến dự lễ thành hôn vào lúc 11:00 - Thứ Ba, 11.08.2026. Click để xem chi tiết!',
-    url: DOMAIN,
-    siteName: 'Đám Cưới Nhất Lập & Quỳnh Như',
+    title: "Thiệp mời đám cưới Nhất Lập & Quỳnh Như",
+    description: "Trân trọng kính mời bạn đến dự tiệc cưới của Nhất Lập & Quỳnh Như!",
+    url: "https://thiepcuoi-nhatlap-quynhnhu.vercel.app/", // Thay bằng domain thật của bạn
+    siteName: "Nhất Lập & Quỳnh Như Wedding",
     images: [
       {
-        url: `${DOMAIN}/anh-web.jpg`, // Đã đổi thành link tuyệt đối
+        url: "/anh-web.jpg", // Bạn nên tạo 1 ảnh 1200x630px để khi gửi link Zalo/FB sẽ hiện ảnh này
         width: 1200,
         height: 630,
-        alt: 'Ảnh cưới Nhất Lập và Quỳnh Như',
+        alt: "Thiệp cưới Nhất Lập & Quỳnh Như",
       },
     ],
-    locale: 'vi_VN',
-    type: 'website',
+    locale: "vi_VN",
+    type: "website",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Thiệp Mời Đám Cưới | Nhất Lập ❤️ Quỳnh Như',
-    description: 'Trân trọng kính mời đến dự lễ thành hôn vào ngày 11.08.2026.',
-    images: [`${DOMAIN}/anh-web.jpg`], // Đã đổi thành link tuyệt đối
+    card: "summary_large_image",
+    title: "Lễ Thành Hôn: Nhất Lập & Quỳnh Như",
+    description: "Trân trọng kính mời bạn đến dự tiệc cưới của chúng mình!",
+    images: ["/anh-web.jpg"],
   },
+  icons: {
+    icon: "/MG.png", // Nhớ thêm file icon nhỏ ở public để hiện trên tab trình duyệt
+  },
+};
+
+// --- CẤU HÌNH VIEWPORT (Đảm bảo hiển thị chuẩn trên mọi điện thoại) ---
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -60,10 +49,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body
-        // Ép nền sáng và màu chữ tối ở đây để chống lại Dark Mode của điện thoại
-        className={`${fcclass.variable} ${uvfa.variable} ${edwardian.variable} antialiased bg-[#f9f1ef] text-gray-800`}
-      >
+      <body className="antialiased overflow-x-hidden selection:bg-[#910000] selection:text-white">
+        {/* Bạn có thể thêm các thành phần dùng chung như:
+            - Thanh loading
+            - Google Analytics (nếu cần)
+            - Background cố định
+        */}
         {children}
       </body>
     </html>
