@@ -53,7 +53,7 @@ export default function RootLayout({
     <html lang="vi">
       <body
         // Ép nền sáng và màu chữ tối ở đây để chống lại Dark Mode của điện thoại
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f4f4f4] text-gray-800`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f9f1ef] text-gray-800`}
       >
         {children}
       </body>

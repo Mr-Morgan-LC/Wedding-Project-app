@@ -1,14 +1,19 @@
 'use client';
 
-import { Great_Vibes, Dancing_Script, Playfair_Display } from 'next/font/google';
+import { Great_Vibes, Dancing_Script, Playfair_Display, Lora } from 'next/font/google';
 import { useEffect, useState, useRef } from 'react';
+import localFont from 'next/font/local';
 import AOS from "aos";
 import "aos/dist/aos.css";
 
 // --- CẤU HÌNH FONT CHUẨN NEXTJS ---
+const edwardian = localFont({ 
+  src: './fonts/UTM-Edwardian.ttf', // Kiểm tra xem file này có trong thư mục fonts chưa
+});
+
 const greatVibes = Great_Vibes({
   weight: '400',
-  subsets: ['latin'],
+  subsets: ['vietnamese'],
   display: 'swap',
 });
 
@@ -23,9 +28,15 @@ const playfair = Playfair_Display({
   display: 'swap',
 });
 
+// Thêm font Lora cho phần ngày tháng (nhìn rất sang cho số)
+const lora = Lora({
+  subsets: ['latin'],
+  display: 'swap',
+});
+
 // --- COMPONENT NHỎ ĐƯỢC ĐƯA RA NGOÀI ĐỂ TRÁNH RE-RENDER ---
 const TimeUnit = ({ value, label }: { value: number, label: string }) => (
-  <div className="flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm border border-stone-200 rounded-lg w-16 py-2 shadow-sm">
+  <div className="flex flex-col items-center justify-center bg-white/40 backdrop-blur-sm border border-stone-200/50 rounded-lg w-16 py-2 shadow-sm">
     <span className="text-xl font-bold text-[#8b0000]">{value}</span>
     <span className="text-[10px] uppercase tracking-tighter text-gray-500">{label}</span>
   </div>
@@ -110,12 +121,11 @@ const FallingEffects = () => {
 
 export default function WeddingInvitation() {
   // --- 1. QUẢN LÝ TRẠNG THÁI ---
-  const [isOpened, setIsOpened] = useState(false); // Trạng thái màn hình Welcome
+  const [isOpened, setIsOpened] = useState(false);
   const [showRSVP, setShowRSVP] = useState(false);
   const [showGifts, setShowGifts] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // Trạng thái nhạc
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
@@ -135,6 +145,15 @@ export default function WeddingInvitation() {
       offset: 50,
     });
   }, []);
+
+  // FIX AOS: Khi bấm mở thiệp, layout thay đổi -> Cần refresh lại tọa độ AOS
+  useEffect(() => {
+    if (isOpened) {
+      setTimeout(() => {
+        AOS.refresh();
+      }, 300); // Đợi DOM render xong rồi đo lại
+    }
+  }, [isOpened]);
 
   // --- 2. LOGIC NHẠC VÀ MỞ THIỆP ---
   const handleOpenInvitation = () => {
@@ -175,12 +194,7 @@ export default function WeddingInvitation() {
       params.append('attending', formData.attending);
       params.append('message', formData.message);
 
-      await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: params,
-      });
-
+      await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: params });
       alert('Cảm ơn bạn! Thông tin đã được gửi đến Dâu & Rể.');
       setShowRSVP(false);
     } catch (error) {
@@ -191,318 +205,372 @@ export default function WeddingInvitation() {
   };
 
   return (
-    <div className={`bg-[#f4f4f4] min-h-screen flex justify-center p-0 md:p-4 font-sans text-gray-800 relative ${playfair.className}`}>
+    // Đổi background ngoài cùng sang tone be nhạt
+    <div className={`bg-[#F5EFE6] min-h-screen flex justify-center p-0 md:p-4 font-sans text-gray-800 relative ${playfair.className}`}>
       <audio ref={audioRef} src="/wedding-music.mp3" loop preload="auto" />
 
-      {/* --- MÀN HÌNH WELCOME OVERLAY (BẮT BUỘC BẤM ĐỂ PHÁT NHẠC) --- */}
-      {!isOpened && (
-        <div className="fixed inset-0 z-[999] bg-[#fdfcfb] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
-          <div className="border border-stone-300 p-8 rounded-xl text-center shadow-sm w-full max-w-[350px] bg-white">
-            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-6">Thư mời tiệc cưới</p>
-            <h1 className={`text-5xl mb-4 text-gray-900 ${greatVibes.className}`}>Nhất Lập <br/> <span className="text-3xl">&</span> <br/> Quỳnh Như</h1>
-            <div className="w-16 h-[1px] bg-gray-300 mx-auto my-6"></div>
-            <button
-              onClick={handleOpenInvitation}
-              className="px-8 py-3 bg-stone-800 text-white rounded-full font-bold uppercase text-xs tracking-widest shadow-lg animate-pulse hover:bg-[#8b0000] transition-colors"
-            >
-              Mở Thiệp
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* KHUNG NỘI DUNG CHÍNH */}
-      <main className={`w-full max-w-[450px] bg-[#fdfcfb] min-h-screen shadow-2xl relative overflow-x-hidden ${!isOpened ? 'hidden' : 'block'}`}>
+      {/* KHUNG NỘI DUNG CHÍNH - Khóa cuộn màn hình nếu chưa bấm Mở Thiệp */}
+      <main className={`w-full max-w-[450px] bg-[#FAF6F0] shadow-2xl relative overflow-x-hidden ${!isOpened ? 'h-[100dvh] overflow-hidden' : 'min-h-screen'}`}>
         
         <FallingEffects />
 
         {/* NÚT NHẠC */}
-        <div className="fixed top-6 right-6 z-50 md:right-[calc(50%-200px)]" data-aos="zoom-in">
-          <button
-            onClick={toggleMusic}
-            className={`w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-white/40 active:scale-90 transition-all overflow-hidden ${isPlaying ? 'animate-heartbeat' : ''}`}
-          >
-            {isPlaying ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src="/gif-icon-music.gif" alt="Playing" className="w-7 h-7 object-contain" />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src="/stop-music-icon.png" alt="Stopped" className="w-7 h-7 object-contain opacity-60" />
-            )}
-          </button>
-        </div>
+        {isOpened && (
+          <div className="fixed top-6 right-6 z-50 md:right-[calc(50%-200px)] animate-in zoom-in duration-500">
+            <button
+              onClick={toggleMusic}
+              className={`w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-[#8c7462]/30 active:scale-90 transition-all overflow-hidden ${isPlaying ? 'animate-heartbeat' : ''}`}
+            >
+              {isPlaying ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/gif-icon-music.gif" alt="Playing" className="w-7 h-7 object-contain" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/stop-music-icon.png" alt="Stopped" className="w-7 h-7 object-contain opacity-60" />
+              )}
+            </button>
+          </div>
+        )}
 
         {/* 1. HERO SECTION */}
-        <section className="relative h-[750px] w-full flex flex-col items-center justify-between py-4">
-          <div className="absolute inset-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/anh-bia.jpg" className="w-full h-full object-cover animate-zoom-in" alt="Bìa" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#fdfcfb]"></div>
-          </div>
+<section className={`relative w-full flex flex-col items-center justify-between py-4 ${!isOpened ? 'h-screen' : 'h-[750px]'}`}>
+  <div className="absolute inset-0 z-0">
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img src="/anh-bia.jpg" className="w-full h-full object-cover animate-zoom-in" alt="Bìa" />
+    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#FAF6F0]"></div>
+  </div>
 
-         <div className="relative z-10 text-center px-4 pt-10 mt-6" data-aos="zoom-in" data-aos-duration="1500">
-          <h1 className={`text-4xl font-bold italic text-gray-900 drop-shadow-md ${greatVibes.className}`}>
-            Nhất Lập & Quỳnh Như
-          </h1>
-        </div>
+  {/* Tên Dâu Rể - Giữ nguyên vị trí mt-6 pt-10 */}
+  <div className="relative z-10 text-center px-4 pt-10 mt-6" data-aos="zoom-in" data-aos-duration="1500">
+    <h1 className={`text-4xl text-[#910000] drop-shadow-md ${edwardian.className}`}>
+      Nhất Lập ♥️ Quỳnh Như
+    </h1>
+  </div>
 
-          <div className="relative z-10 text-center w-full px-12 mb-10 space-y-8">
-            <div className="space-y-2 pt-4 pb-4 border-t border-b border-gray-900/80" data-aos="zoom-in" data-aos-delay="300">
-              <p className="uppercase tracking-[0.4em] text-[16px] text-gray-900 font-bold">Thư mời tiệc cưới</p>
-              <p className="text-lg font-light text-gray-900">9:00 - Thứ ba</p>
-              <div className="text-4xl font-bold tracking-widest text-gray-900">11.08.2026</div>
-            </div>
-
-            <div data-aos="zoom-in">
-               <p className="text-[14px] uppercase tracking-[0.2em] text-gray-800 italic">Trân trọng kính mời</p>
-               <p className={`text-4xl font-black text-gray-900 mt-1 ${dancingScript.className}`}>Anh Linh</p>
-            </div>
-          </div>
-        </section>
-
-        {/* 2. THÔNG TIN GIA ĐÌNH */}
-        <section className="py-8 text-center bg-white relative z-20">
-          <div className="mb-12 italic text-[16px] text-gray-800 space-y-1 text-xs" data-aos="fade-up">
-            <p>“Hôn nhân là chuyện cả đời,</p>
-            <p>Yêu người vừa ý, cưới người mình thương...”</p>
-          </div>
-          
-          <div className="flex justify-between mb-12 text-[13px] uppercase tracking-widest leading-loose px-1">
-            <div className="w-1/2" data-aos="fade-right">
-              <p className="font-bold text-gray-900 mb-2">Nhà Trai</p>
-              <p className="font-bold text-gray-900 leading-tight">Lê Cao Trung</p>
-              <p className="font-bold text-gray-900 leading-tight">Đinh Thị Viên</p>
-              <p className="text-[12px] text-gray-500 mt-1 lowercase normal-case">Xã Ba Gia, Quảng Ngãi</p>
-            </div>
-            <div className="w-1/2" data-aos="fade-left">
-              <p className="font-bold text-gray-900 mb-2">Nhà Gái</p>
-              <p className="font-bold text-gray-900 leading-tight">Châu Văn Tấn</p>
-              <p className="font-bold text-gray-900 leading-tight">Nguyễn Thị Thùy Biên</p>
-              <p className="text-[12px] text-gray-500 mt-1 lowercase normal-case">Xã Eahleo, Đăk Lăk</p>
-            </div>
-          </div>
-
-          <div className={`text-4xl text-gray-800 mb-10 ${greatVibes.className}`} data-aos="zoom-in">
-            Nhất Lập ❤️ Quỳnh Như
-          </div>
-
-          <div className="flex gap-2 h-72 p-2 bg-stone-300 rounded-sm border border-stone-200 shadow-inner " data-aos="fade-up">
-             {/* eslint-disable-next-line @next/next/no-img-element */}
-             <img src="/chure.png" className="w-1/2 h-full object-cover rounded shadow-sm hover:scale-105 transition-transform duration-500" alt="Groom" />
-             {/* eslint-disable-next-line @next/next/no-img-element */}
-             <img src="/codau.JPG" className="w-1/2 h-full object-cover rounded shadow-sm hover:scale-105 transition-transform duration-500" alt="Bride" />
-          </div>
-        </section>
-
-        {/* 3. LỄ THÀNH HÔN */}
-        <section className="py-8 px-4 bg-white text-center">
-          <div className="flex justify-center items-center gap-2 mb-2" data-aos="fade-up">
-            <div className="w-12 h-[1px] bg-gray-400"></div>
-            <p className={`text-4xl ${dancingScript.className}`}>Thư Mời</p>
-            <div className="w-12 h-[1px] bg-gray-400"></div>
-          </div>
-          <p className="text-[11px] uppercase tracking-widest text-gray-500 mb-10" data-aos="fade-up" data-aos-delay="100">Tham dự lễ cưới Nhất Lập & Quỳnh Như</p>
-          
-          <div className="flex items-end justify-center gap-1.5 mb-10 h-64">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/anh-phu-1.jpg" className="w-[30%] h-[80%] object-cover shadow-sm mb-6 border border-stone-200 rounded" alt="Left" data-aos="fade-right" data-aos-delay="200" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/anh-chinh.jpg" className="w-[40%] h-full object-cover shadow-md z-10 border border-stone-200 rounded" alt="Center" data-aos="zoom-in" data-aos-delay="200" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/anh-phu-2.jpg" className="w-[30%] h-[80%] object-cover shadow-sm mb-6 border border-stone-200 rounded" alt="Right" data-aos="fade-left" data-aos-delay="200" />
-          </div>
-
-          <div>
-            <h3 className="uppercase tracking-widest font-bold text-[13px] mb-1" data-aos="fade-up">Lễ Thành Hôn</h3>
-            <p className="text-xs font-bold text-gray-700 mb-6" data-aos="fade-up">Vào Lúc</p>
-            
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <div className="text-center w-[60px]"><p className="text-sm font-bold" data-aos="fade-right">9:00</p></div>
-              <div className="h-12 w-[1px] bg-gray-300"></div>
-              <div className="text-center w-[100px]" data-aos="zoom-in" data-aos-delay="100">
-                <p className="text-[11px] font-bold uppercase tracking-widest">Thứ ba</p>
-                <p className="text-4xl font-black my-1 text-[#8b0000]">11</p>
-                <p className="text-[11px] font-bold uppercase tracking-widest">Tháng 8</p>
-              </div>
-              <div className="h-12 w-[1px] bg-gray-300"></div>
-              <div className="text-center w-[60px]"><p className="text-sm font-bold" data-aos="fade-left">Năm 2026</p></div>
-            </div>
-            
-          <p className="text-[11px] italic text-gray-600 mb-4" data-aos="fade-up">(Tức Ngày 29 Tháng 6 Năm Bính Ngọ)</p>
-          <p className="text-sm font-bold" data-aos="fade-up" data-aos-delay="200">Tại Tư Gia Nhà Trai</p>
-          </div>
-        </section>
-
-        {/* 4. LỊCH THÁNG */}
-        <section className="py-8 px-8 bg-stone-50 border-y border-stone-200" data-aos="fade-up">
-          <div className="flex justify-between items-end mb-6 text-[#8c7462]">
-            <span className={`text-4xl ${dancingScript.className}`}>Tháng 8</span>
-            <span className="text-5xl font-black">2026</span>
-          </div>
-          <div className="border border-[#8c7462] rounded overflow-hidden bg-white shadow-sm">
-            <div className="grid grid-cols-7 bg-[#8c7462] text-white text-[10px] py-2 font-bold text-center">
-              {['T2','T3','T4','T5','T6','T7','CN'].map(d=>(<div key={d}>{d}</div>))}
-            </div>
-            <div className="grid grid-cols-7 gap-y-3 py-3 text-center text-xs text-gray-500">
-              {Array.from({ length: 5 }).map((_, i) => <div key={`empty-${i}`} className="h-8"></div>)}
-              {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                <div key={day} className={`relative flex items-center justify-center h-8 ${day === 11 ? 'font-black text-[#8b0000]' : ''}`}>
-                  {day === 11 && (
-                    <svg className="absolute w-8 h-8 text-[#8b0000] scale-[1.3] animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                    </svg>
-                  )}
-                  <span className="relative z-10">{day}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <p className="text-[15px] uppercase tracking-[0.2em] text-gray-500 italic pt-6 mb-1 text-center">- Đang đếm ngược -</p>
-          <CountdownTimer />
-        </section>
+  {/* KHỐI NỘI DUNG - GIỮ NGUYÊN mb-10 space-y-8 CỦA BẠN */}
+  <div className="relative z-10 text-center w-full px-12 mb-10 space-y-8">
+    
+    {/* Phần Thư mời tiệc cưới - Đứng nguyên vị trí này */}
+    <div className="space-y-2 pt-4 pb-4 border-t border-b border-[#8c7462]/40" data-aos="zoom-in">
+      <p className="uppercase tracking-[0.4em] text-[16px] text-gray-900 font-bold">Thư mời tiệc cưới</p>
       
-         {/* 5. ĐỊA ĐIỂM & BẢN ĐỒ */}
-        <div className="text-center p-6">
-          <h2 className="text-xl font-bold uppercase mb-2" data-aos="zoom-in">Lễ Thành Hôn</h2>
-          <p className="text-sm mb-4" data-aos="zoom-in">Vào lúc 9:00 - Thứ Ba</p>
-          <div className="flex justify-center items-center gap-4 mb-4">
-            <span className="text-4xl" data-aos="fade-right">11</span>
-            <div className="text-left border-l pl-4 border-stone-400">
-              <p className="text-xs uppercase" data-aos="fade-left">Tháng 8</p>
-              <p className="text-xs" data-aos="fade-left">Năm 2026</p>
-            </div>
-          </div>
-          <p className="text-xs italic mb-6" data-aos="fade-up">
-            (Tức Ngày 29 Tháng 6 Năm Bính Ngọ)
-          </p>
-
-          <div className="bg-stone-50  rounded-xl border border-stone-100" data-aos="fade-up" data-aos-delay="200">
-            <p className="font-bold mb-1">TẠI TƯ GIA NHÀ TRAI</p>
-            <p className="text-xs mb-4">Ba gia – An Điềm, Thôn Xuân Hòa, Xã Ba Gia, Tỉnh Quảng Ngãi</p>
-            <div className="w-full h-56 rounded-xl overflow-hidden mb-4 shadow-inner">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10890.523089400649!2d108.67466500763612!3d15.192282176372863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169b1c7e2a8cc8f%3A0xb85077fde744e1b7!2s%C3%94ng%20Cao%20Trung!5e0!3m2!1svi!2s!4v1772958694010!5m2!1svi!2s"
-                className="w-full h-full border-0"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade">
-               </iframe>
-            </div>
-            <a
-              href="https://maps.app.goo.gl/CZ3skShbfk43hcei9"
-              target="_blank"
-              className="inline-block w-full py-3 bg-stone-800 text-white rounded-lg text-xs font-bold uppercase"
-            >
-              Chỉ đường trên Google Maps
-            </a>
-          </div>
+      {/* Khi mở thiệp, giờ ngày hiện ra ở ĐÂY (bên trong border) */}
+      {isOpened && (
+        <div className="animate-in fade-in duration-700 mt-4 space-y-2">
+          <p className="text-lg font-light text-gray-900">11:00 - Thứ ba</p>
+          <div className={`text-4xl font-bold tracking-widest text-gray-900 ${lora.className}`}>11.08.2026</div>
         </div>
+      )}
+    </div>
 
-        {/* 6. ALBUM HÌNH CƯỚI */}
-        <section className="py-4 px-4 bg-white">
-          <div className="flex items-center justify-center gap-4 mb-4" data-aos="fade-up">
-            <h3 className={`text-3xl text-gray-800 ${dancingScript.className}`}>Album hình cưới</h3>
-            <div className="flex-1 h-[1px] bg-gray-300 relative flex items-center justify-center max-w-[120px]">
-               <span className="absolute bg-white px-2 text-[10px]">♥️</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-1.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A1" data-aos="fade-right" data-aos-delay="100" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-3.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A3" data-aos="fade-right" data-aos-delay="150" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-5.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A5" data-aos="fade-right" data-aos-delay="200" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-7.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A7" data-aos="fade-right" data-aos-delay="250" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-9.jpg" className="w-full aspect-[4/3] object-cover rounded shadow-md" alt="A9" data-aos="fade-right" data-aos-delay="300" />
-            </div>
-            <div className="flex flex-col gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-2.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A2" data-aos="fade-left" data-aos-delay="100" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-4.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A4" data-aos="fade-left" data-aos-delay="150" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-6.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A6" data-aos="fade-left" data-aos-delay="200" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-8.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md" alt="A8" data-aos="fade-left" data-aos-delay="250" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/anh-album-10.jpg" className="w-full aspect-[4/3] object-cover rounded shadow-md" alt="A10" data-aos="fade-left" data-aos-delay="300" />
-            </div>
-          </div>
-        </section>
+    {/* NÚT MỞ THIỆP - Nằm DƯỚI dòng thư mời tiệc cưới như bạn yêu cầu */}
+    {!isOpened && (
+      <div className="flex justify-center" data-aos="zoom-in">
+        <button
+          onClick={handleOpenInvitation}
+          className="px-10 mt-5 py-3 bg-[#910000] text-white rounded-full font-bold uppercase text-sm tracking-widest shadow-lg animate-bounce"
+        >
+          Mở Thiệp
+        </button>
+      </div>
+    )}
 
-        {/* 7. PHẦN KẾT */}
-        <section className="relative min-h-[750px] w-full flex flex-col items-center justify-end overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/anh-cuoi-cuoi.jpg"
-              className="w-full h-full object-cover brightness-[0.9] blur-[2px]"
-              alt="Final Background"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40"></div>
-          </div>
+    {/* Khi mở thiệp, tên khách mời hiện ra ở ĐÂY (dưới cùng của khối) */}
+    {isOpened && (
+      <div className="animate-in fade-in duration-1000" data-aos="zoom-in">
+         <p className="text-sm uppercase tracking-[0.2em] text-gray-800 italic">Trân trọng kính mời</p>
+         <p className={`text-4xl font-black text-gray-900 mt-1 ${dancingScript.className}`}>v/c Anh Linh</p>
+      </div>
+    )}
+  </div>
+</section>
 
-          <div className="relative z-10 w-full flex flex-col items-center space-y-8" data-aos="fade-up" data-aos-delay="200">
-            
-            <div className="w-full px-8 space-y-8 mb-15">
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowRSVP(true); }}
-                className="w-full py-4 bg-stone-800/90 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-2xl backdrop-blur-md border border-white/10 active:scale-95 transition-all"
-              >
-                Xác nhận tham dự lễ cưới
-              </button>
+{/* PHẦN NỘI DUNG CHI TIẾT PHÍA DƯỚI */}
+{isOpened && (
+  <div className="animate-in fade-in duration-1000">
+    {/* ... code các phần còn lại của bạn ... */}
+
+            {/* 2. THÔNG TIN GIA ĐÌNH */}
+<section className="py-8 text-center bg-[#FAF6F0] relative z-20">
+  <div className="mb-12 italic text-[16px] text-gray-900 space-y-1" data-aos="fade-up">
+    <p>“Hôn nhân là chuyện cả đời,</p>
+    <p>Yêu người vừa ý, Cưới người Mình thương...”</p>
+  </div>
+
+  {/* --- PHẦN THÔNG TIN GIA ĐÌNH --- */}
+<div className="grid grid-cols-[1fr_auto_1fr] items-stretch mb-12 text-xs uppercase tracking-widest leading-loose  gap-x-1">
+  
+  {/* --- NHÀ TRAI: Căn lề phải sát vào đường kẻ --- */}
+  <div className="flex flex-col items-end text-right justify-center" data-aos="fade-right">
+    <p className="font-bold text-black mb-2">Nhà Trai</p>
+    <p className="text-gray-900 leading-tight">Lê Cao Trung</p>
+    <p className="text-gray-900 leading-tight">Đinh Thị Viên</p>
+    <p className="text-xs text-gray-500 mt-2 lowercase normal-case">Xã Ba Gia, Quảng Ngãi</p>
+  </div>
+
+  {/* --- CỘT TRUNG TÂM: Ly và Đường kẻ --- */}
+  <div className="flex flex-col items-center relative min-w-[35px]">
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img 
+      src="/cungly.png" 
+      className="w-7 h-auto object-contain z-10 bg-[#FAF6F0] pb-2" 
+      alt="Toast" 
+    />
+    {/* Đường kẻ dọc thực sự */}
+    <div className="w-[1px] flex-grow bg-gray-300 my-1"></div>
+  </div>
+
+  {/* --- NHÀ GÁI: Căn lề trái sát vào đường kẻ --- */}
+  <div className="flex flex-col items-start text-left justify-center" data-aos="fade-left">
+    <p className="font-bold text-black mb-2">Nhà Gái</p>
+    <p className="text-gray-900 leading-tight">Châu Văn Tấn</p>
+    <p className="text-gray-900 leading-tight">Nguyễn Thị Thùy Biên</p>
+    <p className="text-xs text-gray-500 mt-2 lowercase normal-case">Xã Eahleo, Đăk Lăk</p>
+  </div>
+</div>
+
+  {/* Tên cô dâu chú rể - Dùng Grid để thẳng hàng với đường line phía trên */}
+<div 
+  className={`grid grid-cols-[1fr_auto_1fr] items-center gap-x-4 text-4xl text-[#910000] mb-10 ${edwardian.className}`} 
+  data-aos="zoom-in"
+>
+  {/* Tên Chú Rể - Căn lề phải */}
+  <span className="text-right">Nhất Lập</span>
+  
+  {/* Chữ Hỷ - Nằm chính giữa cột auto (thẳng hàng với cái ly) */}
+  <div className="flex justify-center min-w-[50px]">
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img 
+      src="/chuHy.png" 
+      className="w-12 h-auto object-contain rounded shadow-sm hover:scale-105 transition-transform duration-500 -translate-y-1" 
+      alt="HY" 
+    />
+  </div>
+
+  {/* Tên Cô Dâu - Căn lề trái */}
+  <span className="text-left">Quỳnh Như</span>
+</div>
+</section>
+
+            {/* 3. LỄ THÀNH HÔN */}
+            <section className="py-8 px-4 bg-[#FAF6F0] text-center border-t border-[#e6dac3]/50">
+              <div className="flex justify-center items-center gap-2 mb-2" data-aos="fade-up">
+                <div className="w-12 h-[1px] bg-[#8c7462]/50"></div>
+                <p className={`text-4xl text-gray-900 ${edwardian.className}`}>Thư Mời</p>
+                <div className="w-12 h-[1px] bg-[#8c7462]/50"></div>
+              </div>
+              <p className="text-xs uppercase tracking-widest text-gray-900 mb-10" data-aos="fade-up" data-aos-delay="100">THAM DỰ LỄ THÀNH HÔN CỦA CHÚNG MÌNH</p>
               
-              <div className="flex justify-center">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowGifts(true); }}
-                  className="w-3/10 py-3 bg-[#8b0000]/90 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg backdrop-blur-md border border-white/10 active:scale-95 transition-all"
+              <div className="flex items-end justify-center gap-1.5 mb-10 h-64">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/anh-phu-1.jpg" className="w-[30%] h-[80%] object-cover shadow-sm mb-6 border border-[#e6dac3] rounded" alt="Left" data-aos="fade-right" data-aos-delay="200" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/anh-chinh.jpg" className="w-[40%] h-full object-cover shadow-md z-10 border border-[#e6dac3] rounded" alt="Center" data-aos="zoom-in" data-aos-delay="200" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/anh-phu-2.jpg" className="w-[30%] h-[80%] object-cover shadow-sm mb-6 border border-[#e6dac3] rounded" alt="Right" data-aos="fade-left" data-aos-delay="200" />
+              </div>
+
+              <div>
+                <h3 className="uppercase tracking-widest font-bold text-xm mb-1 text-[#700000]" >Lễ Thành Hôn</h3>
+                <p className="text-xs font-bold text-gray-700 mb-6" >Vào Lúc</p>
+                
+                <div className="flex items-center justify-center gap-4 mb-6">
+                  <div className="text-center w-[60px]"><p className="text-sm font-bold" data-aos="fade-right">9:00</p></div>
+                  <div className="h-12 w-[1px] bg-[#8c7462]/30"></div>
+                  <div className="text-center w-[100px]" data-aos="zoom-in" data-aos-delay="100">
+                    <p className="text-xs font-bold uppercase tracking-widest">Thứ ba</p>
+                    <p className={`text-4xl font-black my-1 text-[#700000] ${lora.className}`}>11</p>
+                    <p className="text-xs font-bold uppercase tracking-widest">Tháng 8</p>
+                  </div>
+                  <div className="h-12 w-[1px] bg-[#8c7462]/30"></div>
+                  <div className="text-center w-[60px]"><p className="text-sm font-bold" data-aos="fade-left">Năm 2026</p></div>
+                </div>
+                
+              <p className="text-xs italic text-gray-600 mb-4" data-aos="fade-up">(Tức Ngày 29 Tháng 6 Năm Bính Ngọ)</p>
+              <p className="text-sm mb-6 italic text-black" data-aos="fade-up">Tại Tư Gia Nhà Trai</p>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-[#e6dac3] shadow-sm" >
+                <h2 className="text-xm font-bold uppercase mb-2 text-[#700000]" >Tiệc Mừng Lễ Thành Hôn</h2>
+              <p className="text-sm mb-4 font-bold" data-aos="zoom-in">Vào lúc 11 :00 - Thứ Ba</p>
+              <div className="flex justify-center items-center gap-4 mb-4">
+                <span className={`text-4xl font-bold text-[#910000] ${lora.className}`} data-aos="fade-right">11</span>
+                <div className="text-left border-l pl-4 border-[#8c7462]/30">
+                  <p className="text-xs font-bold uppercase" data-aos="fade-left">Tháng 8</p>
+                  <p className="text-xs font-bold" data-aos="fade-left">Năm 2026</p>
+                </div>
+              </div>
+              <p className="text-xs italic text-gray-600 mb-4" data-aos="fade-up">
+                (Tức Ngày 29 Tháng 6 Năm Bính Ngọ)
+              </p>
+              <p className="text-sm text-black font-bold mb-2" data-aos="fade-up">
+                Tại Tư Gia Nhà Trai
+              </p>
+              </div>
+
+
+            </section>
+
+            {/* 4. LỊCH THÁNG */}
+            <section className="py-8 px-8 bg-[#FDFBF7] border-y border-[#e6dac3]" data-aos="fade-up">
+              <div className="flex justify-between items-end mb-6 text-[#910000]">
+                <span className={`text-4xl ${dancingScript.className}`}>Tháng 8</span>
+                <span className={`text-5xl font-black ${lora.className}`}>2026</span>
+              </div>
+              <div className="border border-[#8c7462]/30 rounded overflow-hidden bg-white shadow-sm">
+                <div className="grid grid-cols-7 bg-[#8c7462] text-white text-[10px] py-2 font-bold text-center">
+                  {['T2','T3','T4','T5','T6','T7','CN'].map(d=>(<div key={d}>{d}</div>))}
+                </div>
+                <div className="grid grid-cols-7 gap-y-3 py-3 text-center text-xs text-gray-500">
+                  {Array.from({ length: 5 }).map((_, i) => <div key={`empty-${i}`} className="h-8"></div>)}
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                    <div key={day} className={`relative flex items-center justify-center h-8 ${day === 11 ? 'font-bold text-[#700000]' : ''}`}>
+                      {day === 11 && (
+                        <svg className="absolute w-8 h-8 text-[#910000] scale-[1.3] animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
+                      )}
+                      <span className="relative z-10">{day}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <CountdownTimer />
+            </section>
+          
+            {/* 5. ĐỊA ĐIỂM & BẢN ĐỒ */}
+            <div className="text-center p-6 bg-[#FAF6F0]">
+              <h3 className={`text-3xl text-gray-900 mb-4 ${dancingScript.className}`}>Địa điểm tổ chức</h3>
+            
+              <div className="bg-white p-4 rounded-xl border border-[#e6dac3] shadow-sm" data-aos="fade-up" data-aos-delay="200">
+                <p className="font-bold mb-1 text-Black">TẠI TƯ GIA NHÀ TRAI</p>
+                <p className="text-xs mb-4">Ba gia – An Điềm, Thôn Xuân Hòa, Xã Ba Gia, Tỉnh Quảng Ngãi</p>
+                <div className="w-full h-56 rounded-xl overflow-hidden mb-4 shadow-inner">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10890.523089400649!2d108.67466500763612!3d15.192282176372863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169b1c7e2a8cc8f%3A0xb85077fde744e1b7!2s%C3%94ng%20Cao%20Trung!5e0!3m2!1svi!2s!4v1772958694010!5m2!1svi!2s"
+                    className="w-full h-full border-0"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade">
+                   </iframe>
+                </div>
+                <a
+                  href="https://maps.app.goo.gl/CZ3skShbfk43hcei9"
+                  target="_blank"
+                  className="inline-block w-full py-3 bg-[#e9e9e9] text-Black rounded-lg text-xs font-bold uppercase hover:bg-[#6b584a] transition-colors"
                 >
-                  Wedding gift
-                </button>
+                  Chỉ đường trên Google Maps
+                </a>
               </div>
             </div>
 
-            <div className="w-full py-5 mb-2 bg-white/5 backdrop-blur-[4px] border-y border-white/10 text-center">
-              <p className={`text-6xl text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${greatVibes.className}`}>
-                Thank You
-              </p>
-              
-              <div className="h-[1px] w-10 bg-white/20 mx-auto"></div>
-              
-              <p className="text-lg pt-4 italic font-light text-white/90 tracking-wide drop-shadow-md">
-                Sự hiện diện của Quý Khách là lời chúc phúc trọn vẹn nhất cho tụi con/em/mình và là niềm vinh dự của gia đình!
-              </p>
-            </div>
-            
-            <footer className="px-10 py-2 text-center text-white text-[9px] tracking-[0.4em] uppercase">
-              <p>© 2026 | Design by Morgan</p>
-            </footer>
+            {/* 6. ALBUM HÌNH CƯỚI */}
+            <section className="py-4 px-4 bg-[#FAF6F0]">
+              <div className="flex items-center justify-center gap-4 mb-8" data-aos="fade-up">
+                <h3 className={`text-3xl text-gray-900 ${dancingScript.className}`}>Album hình cưới</h3>
+                <div className="flex-1 h-[1px] bg-black/30 relative flex items-center justify-center max-w-[120px]">
+                   <span className="absolute bg-[#FAF6F0] px-2 text-[10px]">♥️</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-1.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md border border-[#e6dac3]" alt="A1" data-aos="fade-right" data-aos-delay="100" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-3.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md border border-[#e6dac3]" alt="A3" data-aos="fade-right" data-aos-delay="150" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-5.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md border border-[#e6dac3]" alt="A5" data-aos="fade-right" data-aos-delay="200" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-7.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md border border-[#e6dac3]" alt="A7" data-aos="fade-right" data-aos-delay="250" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-9.jpg" className="w-full aspect-[4/3] object-cover rounded shadow-md border border-[#e6dac3]" alt="A9" data-aos="fade-right" data-aos-delay="300" />
+                </div>
+                <div className="flex flex-col gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-2.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md border border-[#e6dac3]" alt="A2" data-aos="fade-left" data-aos-delay="100" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-4.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md border border-[#e6dac3]" alt="A4" data-aos="fade-left" data-aos-delay="150" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-6.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md border border-[#e6dac3]" alt="A6" data-aos="fade-left" data-aos-delay="200" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-8.jpg" className="w-full aspect-[3/4] object-cover rounded shadow-md border border-[#e6dac3]" alt="A8" data-aos="fade-left" data-aos-delay="250" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/anh-album-10.jpg" className="w-full aspect-[4/3] object-cover rounded shadow-md border border-[#e6dac3]" alt="A10" data-aos="fade-left" data-aos-delay="300" />
+                </div>
+              </div>
+            </section>
+
+            {/* 7. PHẦN KẾT */}
+            <section className="relative min-h-[750px] w-full flex flex-col items-center justify-end overflow-hidden mt-8">
+              <div className="absolute inset-0 z-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/anh-cuoi-cuoi.jpg"
+                  className="w-full h-full object-cover brightness-[0.8] blur-[1px]"
+                  alt="Final Background"
+                />
+                
+              </div>
+
+              <div className="relative z-10 w-full flex flex-col items-center space-y-8" data-aos="fade-up" data-aos-delay="200">
+                
+                <div className="w-full px-8 space-y-4 mb-15">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowRSVP(true); }}
+                    className="w-full py-4 bg-[#bfbdb8]/90 text-Black rounded-xl font-bold text-xs uppercase tracking-widest shadow-2xl backdrop-blur-md border border-white/20 active:scale-95 transition-all"
+                  >
+                    Xác nhận tham dự lễ cưới
+                  </button>
+                  
+                  <div className="flex justify-center">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShowGifts(true); }}
+                      className="w-2/5 py-3 bg-[#700000]/90 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg backdrop-blur-md border border-white/20 active:scale-95 transition-all"
+                    >
+                      Wedding gift
+                    </button>
+                  </div>
+                </div>
+
+                <div className="w-full py-5 mb-2 bg-[#8c7462]/10 backdrop-blur-[6px] border-y border-white/20 text-center">
+                  <p className={`text-6xl text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] ${greatVibes.className}`}>
+                    Thank You
+                  </p>
+                  
+                  <div className="h-[1px] w-10 bg-white/40 mx-auto"></div>
+                  
+                  <p className="text-[13px] pt-4 px-4 italic font-light text-white/95 tracking-wide drop-shadow-md">
+                    Sự hiện diện của Quý Khách là lời chúc phúc trọn vẹn nhất cho chúng tôi và là niềm vinh dự của gia đình!
+                  </p>
+                </div>
+                
+                <footer className="px-10 py-3 text-center text-white/80 text-[9px] tracking-[0.4em] uppercase">
+                  <p>© 2026 | Design by Morgan</p>
+                </footer>
+              </div>
+            </section>
           </div>
-        </section>
+        )}
 
         {/* MODAL RSVP */}
         {showRSVP && (
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
-            onClick={(e) => e.stopPropagation()} // Ngăn chặn sự kiện nổi bọt ở background của modal
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-white w-full max-w-[340px] rounded-[20px] p-8 relative animate-in zoom-in duration-300 shadow-2xl border border-stone-100">
-              <button onClick={() => setShowRSVP(false)} className="absolute top-4 right-4 text-gray-400 text-xl font-light">✕</button>
+            <div className="bg-[#FAF6F0] w-full max-w-[340px] rounded-[20px] p-8 relative animate-in zoom-in duration-300 shadow-2xl border border-[#e6dac3]">
+              <button onClick={() => setShowRSVP(false)} className="absolute top-4 right-4 text-gray-400 text-xl font-light hover:text-[#8c7462]">✕</button>
               
-              <h3 className={`text-3xl text-center mb-1 text-gray-800 ${greatVibes.className}`}>Xác Nhận Tham Dự</h3>
-              <div className="w-24 h-[1px] bg-gray-800 mx-auto mb-8 opacity-40"></div>
+              <h3 className={`text-3xl text-center mb-1 text-[#8c7462] ${greatVibes.className}`}>Xác Nhận Tham Dự</h3>
+              <div className="w-24 h-[1px] bg-[#8c7462] mx-auto mb-8 opacity-40"></div>
 
               <form onSubmit={handleRSVPSubmit} className="space-y-4">
-                <input required placeholder="Tên của bạn là?" className="w-full px-5 py-3 rounded-full border border-gray-600 bg-stone-50/50 text-sm outline-none placeholder:text-gray-400" onChange={e=>setFormData({...formData, name: e.target.value})} />
-                <input placeholder="Bạn là gì của Dâu Rể nhỉ?" className="w-full px-5 py-3 rounded-full border border-gray-600 bg-stone-50/50 text-sm outline-none placeholder:text-gray-400" onChange={e=>setFormData({...formData, relation: e.target.value})} />
-                <input placeholder="Gửi lời chúc đến Dâu Rể nhé!" className="w-full px-5 py-3 rounded-full border border-gray-600 bg-stone-50/50 text-sm outline-none placeholder:text-gray-400" onChange={e=>setFormData({...formData, message: e.target.value})} />
+                <input required placeholder="Tên của bạn là?" className="w-full px-5 py-3 rounded-full border border-[#d8c8b5] bg-white text-sm outline-none placeholder:text-gray-400 focus:border-[#8c7462]" onChange={e=>setFormData({...formData, name: e.target.value})} />
+                <input placeholder="Bạn là gì của Dâu Rể nhỉ?" className="w-full px-5 py-3 rounded-full border border-[#d8c8b5] bg-white text-sm outline-none placeholder:text-gray-400 focus:border-[#8c7462]" onChange={e=>setFormData({...formData, relation: e.target.value})} />
+                <input placeholder="Gửi lời chúc đến Dâu Rể nhé!" className="w-full px-5 py-3 rounded-full border border-[#d8c8b5] bg-white text-sm outline-none placeholder:text-gray-400 focus:border-[#8c7462]" onChange={e=>setFormData({...formData, message: e.target.value})} />
                 
                 <div className="relative">
-                  <select className="w-full px-5 py-3 rounded-full border border-gray-600 bg-transparent text-sm outline-none appearance-none text-gray-500" onChange={e=>setFormData({...formData, attending: e.target.value})}>
+                  <select className="w-full px-5 py-3 rounded-full border border-[#d8c8b5] bg-white text-sm outline-none appearance-none text-gray-500 focus:border-[#8c7462]" onChange={e=>setFormData({...formData, attending: e.target.value})}>
                     <option value="yes">Bạn Có Tham Dự Không?</option>
                     <option value="yes">Mình sẽ tham dự!</option>
                     <option value="no">Tiếc quá, mình bận mất rồi</option>
@@ -512,7 +580,7 @@ export default function WeddingInvitation() {
                   </div>
                 </div>
 
-                <button disabled={loading} className="w-full mt-2 py-4 bg-[#4a4a4a] text-white rounded-full font-bold uppercase text-[11px] tracking-widest shadow-md">
+                <button disabled={loading} className="w-full mt-2 py-4 bg-[#8c7462] hover:bg-[#6b584a] transition-colors text-white rounded-full font-bold uppercase text-[11px] tracking-widest shadow-md">
                   {loading ? "ĐANG GỬI..." : "GỬI NGAY"}
                 </button>
               </form>
@@ -524,19 +592,19 @@ export default function WeddingInvitation() {
         {showGifts && (
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
-            onClick={(e) => e.stopPropagation()} // Ngăn chạm vào modal kích hoạt sự kiện body
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-white w-full max-w-[320px] rounded-[20px] p-8 relative text-center shadow-2xl border border-stone-100">
-              <button onClick={() => setShowGifts(false)} className="absolute top-4 right-4 text-gray-400 text-xl font-light">✕</button>
-              <h3 className={`text-3xl text-gray-800 mb-1 ${greatVibes.className}`}>Gửi Mừng Cưới</h3>
-              <div className="w-24 h-[1px] bg-gray-800 mx-auto mb-6 opacity-40"></div>
+            <div className="bg-[#FAF6F0] w-full max-w-[320px] rounded-[20px] p-8 relative text-center shadow-2xl border border-[#e6dac3]">
+              <button onClick={() => setShowGifts(false)} className="absolute top-4 right-4 text-gray-400 text-xl font-light hover:text-[#8c7462]">✕</button>
+              <h3 className={`text-3xl text-[#8c7462] mb-1 ${greatVibes.className}`}>Gửi Mừng Cưới</h3>
+              <div className="w-24 h-[1px] bg-[#8c7462] mx-auto mb-6 opacity-40"></div>
 
-              <div className="bg-stone-50 p-4 rounded-xl mb-4 border border-stone-200 shadow-inner">
+              <div className="bg-white p-4 rounded-xl mb-4 border border-[#e6dac3] shadow-inner">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/QRCODE-CR.png" className="w-40 h-40 mx-auto mix-blend-multiply" alt="QR" />
               </div>
-              <p className="font-bold text-gray-800 text-sm uppercase">VCB - Le Cao Nhat Lap</p>
-              <p className="text-xl mt-1 text-stone-600 font-bold tracking-wider">3335741122</p>
+              <p className="font-bold text-[#8c7462] text-sm uppercase">VCB - Le Cao Nhat Lap</p>
+              <p className="text-xl mt-1 text-gray-700 font-bold tracking-wider">3335741122</p>
             </div>
           </div>
         )}
